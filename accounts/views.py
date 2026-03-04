@@ -8,7 +8,11 @@ import random
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.conf import settings
-
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.urls import reverse
+from django.core.mail import send_mail
 # Create your views here.
 @login_required(login_url='accountLogin')
 def home(request):
@@ -135,6 +139,65 @@ def login_view(request):
         else:
             messages.error(request, "Invalid credentials.")
     return render(request, 'accounts/login.html')
+
+def forgot_password(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+
+        try:
+            user = User.objects.get(email=email)
+
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            reset_link = request.build_absolute_uri(
+                reverse('reset_password', kwargs={'uidb64': uid, 'token': token})
+            )
+
+            send_mail(
+                "Reset Your Password",
+                f"Click the link below to reset your password:\n\n{reset_link}",
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+
+            messages.success(request, "Password reset link sent to your email.")
+            return redirect('accountLogin')
+
+        except User.DoesNotExist:
+            messages.error(request, "No account found with this email.")
+
+    return render(request, "accounts/forgot_password.html")
+
+def reset_password(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except:
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+
+        if request.method == "POST":
+            password = request.POST.get("password")
+            confirm_password = request.POST.get("confirm_password")
+
+            if password != confirm_password:
+                messages.error(request, "Passwords do not match.")
+                return redirect(request.path)
+
+            user.set_password(password)
+            user.save()
+
+            messages.success(request, "Password reset successful. Please login.")
+            return redirect('accountLogin')
+
+        return render(request, "accounts/reset_password.html")
+
+    else:
+        messages.error(request, "Invalid or expired link.")
+        return redirect('forgot_password')
 
 @login_required(login_url='accountLogin')
 def logout_view(request):

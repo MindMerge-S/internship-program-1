@@ -24,4 +24,12 @@ urlpatterns = [
     path("__reload__/",include("django_browser_reload.urls")),
     path('', home, name='home'),
     path('account/', include('accounts.urls')),
+    path('AIReasoning/', include('aiReasoning.urls')),
+    path('dashboard/', include('dashboard.urls')),
+    path('JournalLearning/', include('journalLearning.urls')),
+    path('MarketOverview/', include('marketOverview.urls')),
+    path('RiskManager/', include('riskManager.urls')),
+    path('Settings/', include('settings_app.urls')),
+    path('StrategyBuilder/', include('strategyBuilder.urls')),
+    path('TradeMonitor/', include('tradeMonitor.urls')),
 ] + static(settings.MEDIA_URL , document_root = settings.MEDIA_ROOT)

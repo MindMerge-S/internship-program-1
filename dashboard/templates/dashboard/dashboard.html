@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="custom-card shadow-sm p-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="stat-group">
+                            <small class="label-text">NIFTY 50</small>
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 fw-bold main-text">22,453.20</span>
+                                <span class="text-success ms-2 small"><i class="bi bi-caret-up-fill"></i> 0.45%</span>
+                            </div>
+                        </div>
+                        <div class="vr-line"></div>
+                        <div class="stat-group">
+                            <small class="label-text">INDIA VIX</small>
+                            <span class="fs-5 fw-bold main-text">14.22</span>
+                        </div>
+                        <div class="vr-line"></div>
+                        <div class="stat-group">
+                            <small class="label-text">PCR (Nifty)</small>
+                            <span class="fs-5 fw-bold main-text">0.92</span>
+                        </div>
+                    </div>
+                    <div class="trend-badge-bull">
+                        <i class="bi bi-graph-up-arrow me-2"></i> TREND: BULLISH
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="custom-card shadow-sm h-100 p-3">
+                <h6 class="fw-bold mb-3 main-text"><i class="bi bi-clock-history me-2"></i>Trend Panel (5m/15m)</h6>
+                <div class="panel-item border-bottom">
+                    <span class="main-text">Short Term (5m)</span>
+                    <span class="badge bg-success">Strong Buy</span>
+                </div>
+                <div class="panel-item">
+                    <span class="main-text">Intraday (15m)</span>
+                    <span class="badge bg-warning text-dark">Sideways</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="custom-card shadow-sm h-100 p-3 text-center">
+                <h6 class="fw-bold mb-1 text-start main-text">Volatility Panel</h6>
+                <div class="py-3">
+                    <h3 class="mb-0 text-primary fw-bold">68.4%</h3>
+                    <small class="label-text">IV Percentile (IVP)</small>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar-fill" style="width: 68%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="custom-card shadow-sm h-100 p-3">
+                <h6 class="fw-bold mb-3 main-text">ATM Magnet Zone</h6>
+                <div class="atm-box">
+                    <span class="d-block small label-text">Current ATM Strike</span>
+                    <span class="fs-4 fw-bold main-text">22,500</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="custom-card shadow-sm overflow-hidden">
+                <div class="p-3 border-bottom-theme d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0 main-text">Option Chain Heatmap (NIFTY)</h6>
+                    <button class="btn btn-sm btn-outline-primary">Refresh Data</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="custom-table w-100">
+                        <thead>
+                            <tr>
+                                <th>CE OI</th>
+                                <th>CE Δ</th>
+                                <th>STRIKE</th>
+                                <th>PE Δ</th>
+                                <th>PE OI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="heatmap-high">1.2M</td>
+                                <td class="main-text">0.32</td>
+                                <td class="strike-cell">22,400</td>
+                                <td class="main-text">0.68</td>
+                                <td class="heatmap-low">450K</td>
+                            </tr>
+                            <tr class="atm-row">
+                                <td class="heatmap-med">890K</td>
+                                <td class="main-text">0.50</td>
+                                <td class="strike-cell highlight">22,500 (ATM)</td>
+                                <td class="main-text">0.50</td>
+                                <td class="heatmap-high">1.5M</td>
+                            </tr>
+                            <tr>
+                                <td class="heatmap-low">200K</td>
+                                <td class="main-text">0.72</td>
+                                <td class="strike-cell">22,600</td>
+                                <td class="main-text">0.28</td>
+                                <td class="heatmap-med">780K</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* ========== THEME ENGINE OVERRIDES ========== */
+    :root {
+        --card-bg: #ffffff;
+        --text-main: #1a1d20;
+        --text-muted: #6c757d;
+        --border-theme: #dee2e6;
+        --strike-bg: #f8f9fa;
+        --progress-bg: #e9ecef;
+    }
+
+    html[data-theme="dark"] {
+        --card-bg: #1a1d21;
+        --text-main: #f8f9fa;
+        --text-muted: #adb5bd;
+        --border-theme: #2d3238;
+        --strike-bg: #111418;
+        --progress-bg: #2d3238;
+    }
+
+    /* ========== CUSTOM DASHBOARD STYLES ========== */
+    .dashboard-container {
+        color: var(--text-main);
+    }
+
+    .custom-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-theme);
+        border-radius: 16px;
+        transition: background-color 0.3s ease;
+    }
+
+    .main-text { color: var(--text-main) !important; }
+    .label-text { color: var(--text-muted) !important; }
+
+    .vr-line {
+        width: 1px;
+        height: 40px;
+        background-color: var(--border-theme);
+    }
+
+    .panel-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+    }
+
+    .border-bottom-theme {
+        border-bottom: 1px solid var(--border-theme);
+    }
+
+    /* ATM & Heatmap */
+    .atm-box {
+        text-align: center;
+        padding: 15px;
+        border-radius: 12px;
+        background-color: var(--strike-bg);
+    }
+
+    .progress-container {
+        height: 8px;
+        background-color: var(--progress-bg);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        background-color: var(--primary);
+    }
+
+    /* TABLE STYLES */
+    .custom-table {
+        border-collapse: collapse;
+        text-align: center;
+    }
+    .custom-table th {
+        background-color: var(--strike-bg);
+        color: var(--text-muted);
+        padding: 12px;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--border-theme);
+    }
+    .custom-table td {
+        padding: 14px;
+        border-bottom: 1px solid var(--border-theme);
+    }
+
+    .strike-cell {
+        background-color: var(--strike-bg);
+        font-weight: bold;
+        color: var(--text-main);
+    }
+    .strike-cell.highlight {
+        color: #0d6efd;
+    }
+
+    .atm-row {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+
+    /* HEATMAP LOGIC */
+    .heatmap-high { color: #198754; font-weight: bold; background-color: rgba(25, 135, 84, 0.1); }
+    .heatmap-med { color: #fd7e14; background-color: rgba(253, 126, 20, 0.1); }
+    .heatmap-low { color: #dc3545; background-color: rgba(220, 53, 69, 0.1); }
+
+    .trend-badge-bull {
+        background-color: rgba(25, 135, 84, 0.15);
+        color: #198754;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

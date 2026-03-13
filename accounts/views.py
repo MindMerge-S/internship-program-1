@@ -13,11 +13,9 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.urls import reverse
 from django.core.mail import send_mail
-# Create your views here.
-@login_required(login_url='accountLogin')
-def home(request):
-    return render(request, 'accounts/home.html')
 
+
+# Create your views here.
 def register(request):
     if request.user.is_authenticated:
         return redirect('home')
@@ -44,17 +42,15 @@ def register(request):
 
         otp = str(random.randint(100000, 999999))
 
-        request.session['registration_data'] = {
-            'first_name': first_name,
-            'last_name': last_name,
-            'username': username,
-            'email': email,
-            'password': password,
-            'otp': otp,
-            'otp_created_at': timezone.now().timestamp()
-        }
+        otp_obj = RegistrationOTP.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            email=email,
+            password=password,
+            otp=otp
+        )
 
-        # 6️⃣ Send OTP Email
         send_mail(
             'Verify your account',
             f'Your OTP is: {otp}',
@@ -63,45 +59,42 @@ def register(request):
             fail_silently=False,
         )
 
+        # request.session['otp_id'] = otp_obj.id
+
         messages.success(request, "OTP sent to your email.")
-        return redirect('verify_otp')
+        return redirect('verify_otp', otp_id=otp_obj.id)
 
     return render(request, 'accounts/register.html')
 
-def verify_otp(request):
-    reg_data = request.session.get('registration_data')
-
-    if not reg_data:
-        messages.error(request, "Session expired. Please register again.")
+def verify_otp(request, otp_id):
+    try:
+        reg_data = RegistrationOTP.objects.get(id=otp_id)
+    except RegistrationOTP.DoesNotExist:
+        messages.error(request, "Invalid verification request.")
         return redirect('accountRegister')
 
     if request.method == 'POST':
         user_otp = request.POST.get('otp')
 
-        # OTP Expiry check (10 min)
-        otp_time = float(reg_data['otp_created_at'])
-        if timezone.now().timestamp() - otp_time > 600:
-            del request.session['registration_data']
+        # OTP Expiry check
+        if timezone.now() - reg_data.created_at > timezone.timedelta(minutes=10):
+            reg_data.delete()
             messages.error(request, "OTP expired.")
             return redirect('accountRegister')
 
-        # OTP Match
-        if reg_data['otp'] == user_otp:
+        if reg_data.otp == user_otp:
 
-            # Create User NOW
             new_user = User.objects.create_user(
-                username=reg_data['username'],
-                email=reg_data['email'],
-                password=reg_data['password'],
-                first_name=reg_data['first_name'],
-                last_name=reg_data['last_name']
+                username=reg_data.username,
+                email=reg_data.email,
+                password=reg_data.password,
+                first_name=reg_data.first_name,
+                last_name=reg_data.last_name
             )
 
-            # Create Profile
             Profile.objects.create(user=new_user)
 
-            # Clear session
-            del request.session['registration_data']
+            reg_data.delete()
 
             login(request, new_user)
             messages.success(request, "Account created successfully!")

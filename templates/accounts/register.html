@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Account | TreadMarket{% endblock title %}
+
+{% block content %}
+<div class="card auth-card shadow-lg border-0 my-4">
+    <div class="card-header bg-white border-0 pt-4">
+        <h3 class="text-center fw-bold text-dark mb-0">Create Account</h3>
+        <p class="text-center text-muted small">Join the TreadMarket community today</p>
+    </div>
+
+    <div class="card-body px-4 pb-4">
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-semibold small text-uppercase text-muted">First Name</label>
+                    <input type="text" name="first_name" class="form-control border-2 shadow-none" placeholder="Jane" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-semibold small text-uppercase text-muted">Last Name</label>
+                    <input type="text" name="last_name" class="form-control border-2 shadow-none" placeholder="Doe" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small text-uppercase text-muted">Username</label>
+                <input type="text" name="username" class="form-control border-2 shadow-none" placeholder="janedoe123" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small text-uppercase text-muted">Email Address</label>
+                <input type="email" name="email" class="form-control border-2 shadow-none" placeholder="jane@example.com" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-semibold small text-uppercase text-muted">Password</label>
+                    <input type="password" name="password" class="form-control border-2 shadow-none" placeholder="••••••••" required>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <label class="form-label fw-semibold small text-uppercase text-muted">Confirm Password</label>
+                    <input type="password" name="confirm_password" class="form-control border-2 shadow-none" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm rounded-3 mb-3">
+                Register
+            </button>
+            
+            <div class="position-relative my-4">
+                <hr class="text-muted">
+                <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small text-center">ALREADY HAVE AN ACCOUNT?</span>
+            </div>
+
+            <div class="text-center">
+                <a href="{% url 'accountLogin' %}" class="btn btn-outline-dark w-100 py-2 fw-bold rounded-3">
+                    Login to Your Account
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

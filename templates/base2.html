@@ -1,0 +1,292 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Trading Dashboard{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --accent: #6610f2;
+            --bg-main: #f8f9fa;
+            --sidebar-w: 260px;
+            --sidebar-collapsed-w: 70px;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --border-color: #e0e0e0;
+            --text-main: #1a1d20;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html[data-theme="dark"] {
+            --bg-main: #0b0e11;
+            --glass-bg: rgba(22, 26, 30, 0.9);
+            --border-color: #2d3139;
+            --text-main: #e9ecef;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            transition: var(--transition);
+        }
+
+        /* ========== GLASS TOPBAR ========== */
+        .topbar {
+            height: 65px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            justify-content: space-between;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1050;
+        }
+        /* Ensure the toggle icon follows the theme text color */
+        .navbar-toggler-icon-custom {
+            color: var(--text-main) !important;
+            transition: var(--transition);
+        }
+
+        /* Optional: Add a slight glow or different color on hover */
+        .navbar-toggler-icon-custom:hover {
+            color: var(--primary) !important;
+        }
+        .topbar .btn:hover {
+            background: var(--border-color);
+            border-radius: 8px;
+        }
+
+        /* ========== MODERN SIDEBAR ========== */
+        .sidebar {
+            width: var(--sidebar-w);
+            height: 100vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 80px;
+            transition: var(--transition);
+            z-index: 1040;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-w);
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 24px;
+            text-decoration: none;
+            color: var(--text-main);
+            margin: 4px 12px;
+            border-radius: 10px;
+            transition: var(--transition);
+            white-space: nowrap;
+            opacity: 0.8;
+        }
+
+        .sidebar-link i {
+            font-size: 1.25rem;
+            margin-right: 15px;
+            min-width: 25px;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background: var(--primary);
+            color: white !important;
+            opacity: 1;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+        }
+
+        .sidebar.collapsed .link-text {
+            display: none;
+        }
+
+        /* ========== MAIN CONTENT AREA ========== */
+        .main-wrapper {
+            margin-left: var(--sidebar-w);
+            margin-top: 65px;
+            padding: 30px;
+            transition: var(--transition);
+        }
+
+        .main-wrapper.expanded {
+            margin-left: var(--sidebar-collapsed-w);
+        }
+
+        /* ========== MARKET TICKER PILLS ========== */
+        .market-badge {
+            background: var(--border-color);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .clock-box {
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.mobile-show { transform: translateX(0); width: 100%; }
+            .main-wrapper { margin-left: 0 !important; }
+        }
+    </style>
+    {% block styles %}{% endblock %}
+</head>
+
+<body>
+    <nav class="topbar">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-sm border-0" onclick="toggleSidebar()">
+                <i class="bi bi-list fs-4 navbar-toggler-icon-custom"></i>
+            </button>
+            <span class="fw-bold fs-5 d-none d-md-block">PRO<span class="text-primary">TRADE</span></span>
+            
+            <div class="d-none d-lg-flex gap-2 ms-4">
+                <div class="market-badge">NIFTY: <span class="text-success">{{ nifty_price|default:"22,450" }}</span></div>
+                <div class="market-badge">BNK: <span class="text-danger">{{ banknifty_price|default:"47,120" }}</span></div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <div class="clock-box d-none d-sm-block me-3" id="clock">00:00:00</div>
+            
+            <button class="btn btn-outline-secondary rounded-circle border-0" onclick="toggleTheme()">
+                <i class="bi bi-moon-stars" id="themeIcon"></i>
+            </button>
+
+            {% if user.is_authenticated %}
+            <div class="dropdown">
+                <button class="btn btn-light rounded-pill px-3 dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle me-1"></i> {{ user.username }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                    <li><a class="dropdown-item" href="{% url 'accountProfile' %}"><i class="bi bi-person me-2"></i> Profile</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form method="POST" action="{% url 'accountLogout' %}" class="px-2">
+                            {% csrf_token %}
+                            <button class="btn btn-danger btn-sm w-100">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <aside class="sidebar" id="sidebar">
+        <a href="{% url 'home' %}" class="sidebar-link active">
+            <i class="bi bi-grid-1x2-fill"></i>
+            <span class="link-text">Dashboard</span>
+        </a>
+        <a href="#" class="sidebar-link">
+            <i class="bi bi-graph-up-arrow"></i>
+            <span class="link-text">Market Overview</span>
+        </a>
+        <a href="#" class="sidebar-link">
+            <i class="bi bi-diagram-3"></i>
+            <span class="link-text">Strategy Builder</span>
+        </a>
+        <a href="#" class="sidebar-link">
+            <i class="bi bi-cpu"></i>
+            <span class="link-text">AI Reasoning</span>
+        </a>
+        <a href="#" class="sidebar-link">
+            <i class="bi bi-bar-chart"></i>
+            <span class="link-text"> Trade Monitor</span>
+        </a>
+        <a href="#" class="sidebar-link">
+            <i class="bi bi-shield-check"></i>
+            <span class="link-text">Risk Manager</span>
+        </a>
+        <a href="#" class="sidebar-link">
+            <i class="bi bi-journal-text"></i>
+            <span class="link-text">Journal / Learning</span>
+        </a>
+        <hr class="mx-3 my-4 opacity-10">
+        <a href="#" class="sidebar-link">
+            <i class="bi bi-gear"></i>
+            <span class="link-text">Settings</span>
+        </a>
+    </aside>
+
+    <main class="main-wrapper" id="mainWrapper">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{message.tags}} alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4">
+                    {{ message }}
+                    <button class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="container-fluid">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        // SIDEBAR TOGGLE
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const wrapper = document.getElementById('mainWrapper');
+            sidebar.classList.toggle('collapsed');
+            wrapper.classList.toggle('expanded');
+        }
+
+        // CLOCK
+        function updateClock(){
+            const now = new Date();
+            document.getElementById("clock").innerHTML = now.toLocaleTimeString([], {hour12: false});
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // THEME ENGINE
+        function toggleTheme(){
+            let theme = document.documentElement.getAttribute("data-theme");
+            let icon = document.getElementById("themeIcon");
+            let newTheme = theme === "dark" ? "light" : "dark";
+            
+            document.documentElement.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme);
+            icon.className = newTheme === "dark" ? "bi bi-sun" : "bi bi-moon-stars";
+        }
+
+        (function(){
+            let saved = localStorage.getItem("theme") || 'light';
+            document.documentElement.setAttribute("data-theme", saved);
+            document.getElementById("themeIcon").className = saved === "dark" ? "bi bi-sun" : "bi bi-moon-stars";
+        })();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

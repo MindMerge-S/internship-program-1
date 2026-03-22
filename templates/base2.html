@@ -201,13 +201,13 @@
     </nav>
 
     <aside class="sidebar" id="sidebar">
-        <a href="{% url 'home' %}" class="sidebar-link active">
+        <a href="{% url 'home' %}" class="sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
             <i class="bi bi-grid-1x2-fill"></i>
             <span class="link-text">Dashboard</span>
         </a>
-        <a href="#" class="sidebar-link">
-            <i class="bi bi-graph-up-arrow"></i>
-            <span class="link-text">Market Overview</span>
+        <a href="{% url 'market_regime_classifier_index' %}" class="sidebar-link {% if request.resolver_match.url_name == 'market_regime_classifier_index' %}active{% endif %}">
+            <i class="bi bi-cpu"></i>
+            <span class="link-text">Market Regime Classifier</span>
         </a>
         <a href="#" class="sidebar-link">
             <i class="bi bi-diagram-3"></i>

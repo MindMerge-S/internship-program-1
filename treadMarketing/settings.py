@@ -37,7 +37,7 @@ INSTALLED_APPS += [
     'dashboard',
     'django_browser_reload',
     'journalLearning',
-    'marketOverview',
+    'market_regime_classifier',
     'riskManager',
     'settings_app',
     'strategyBuilder',

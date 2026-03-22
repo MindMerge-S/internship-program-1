@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class MarketoverviewConfig(AppConfig):
+class MarketRegimeClassifierConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'marketOverview'
+    name = 'market_regime_classifier'

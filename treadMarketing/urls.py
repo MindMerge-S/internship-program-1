@@ -27,7 +27,7 @@ urlpatterns = [
     path('AIReasoning/', include('aiReasoning.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('JournalLearning/', include('journalLearning.urls')),
-    path('MarketOverview/', include('marketOverview.urls')),
+    path('MarketRegimeClassifier/', include('market_regime_classifier.urls')),
     path('RiskManager/', include('riskManager.urls')),
     path('Settings/', include('settings_app.urls')),
     path('StrategyBuilder/', include('strategyBuilder.urls')),

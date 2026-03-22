@@ -1,0 +1,370 @@
+{% extends "base2.html" %}
+
+{% block content %}
+<div class="regime-container">
+    <div class="row g-3">
+        <!-- Header Stats Panel -->
+        <div class="col-12">
+            <div class="custom-card shadow-sm p-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="stat-group">
+                            <small class="label-text">Current Regime</small>
+                            <div class="d-flex align-items-center">
+                                <span id="currentRegime" class="fs-4 fw-bold main-text">{{ regime }}</span>
+                                <span class="badge bg-info ms-2">Classification</span>
+                            </div>
+                        </div>
+                        <div class="vr-line"></div>
+                        <div class="stat-group">
+                            <small class="label-text">Model Confidence</small>
+                            <span id="modelConfidence" class="fs-5 fw-bold main-text">{{ confidence }}%</span>
+                        </div>
+                        <div class="vr-line"></div>
+                        <div class="stat-group">
+                            <small class="label-text">Last Updated</small>
+                            <span id="updatedAt" class="fs-5 fw-bold main-text">{{ updated_at|date:"H:i:s" }}</span>
+                        </div>
+                    </div>
+                    <div class="regime-status-badge">
+                        <i class="bi bi-circle-fill text-success me-2"></i> ACTIVE
+                    </div>
+                </div>
+                <div class="mt-2 text-end manual-override-alert text-warning"></div>
+                {% if manual_override %}
+                <script>document.addEventListener('DOMContentLoaded', function(){ document.querySelector('.manual-override-alert').textContent = 'Manual override in effect: {{ manual_override }}'; });</script>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Evidence Panel -->
+        <div class="col-md-6">
+            <div class="custom-card shadow-sm h-100 p-3 evidence-panel">
+                <h6 class="fw-bold mb-3 main-text"><i class="bi bi-cpu me-2 text-primary"></i>Evidence Panel</h6>
+                {% for item in evidence_items %}
+                <div class="panel-item {% if not forloop.last %}border-bottom{% endif %}">
+                    <span class="main-text">{{ item }}</span>
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Confidence Score Panel -->
+        <div class="col-md-6">
+            <div class="custom-card shadow-sm h-100 p-3 text-center confidence-score">
+                <h6 class="fw-bold mb-1 text-start main-text">Confidence Score</h6>
+                <div class="py-3">
+                    <h2 id="confidenceHeading" class="mb-0 text-primary fw-bold">{{ confidence }}%</h2>
+                    <small class="label-text">AI Model Confidence</small>
+                </div>
+                <div class="progress-container">
+                    <div id="confidenceBar" class="progress-bar-fill" style="width: {{ confidence }}%"></div>
+                </div>
+                <small class="label-text mt-2 d-block">High confidence in current classification</small>
+            </div>
+        </div>
+
+        <!-- Regime Analysis Section -->
+        <div class="col-12">
+            <div class="custom-card shadow-sm overflow-hidden regime-analysis">
+                <div class="p-3 border-bottom-theme d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0 main-text">Regime Analysis</h6>
+                    <button id="refreshAnalysisBtn" class="btn btn-sm btn-outline-primary">Refresh Analysis</button>
+                </div>
+                <div class="p-3">
+                    <div class="row g-3">
+                        {% for item in regime_metrics %}
+                        <div class="col-md-3">
+                            <div class="regime-box">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="label-text">{{ item.name }}</small>
+                                    <span class="badge bg-light text-dark">{{ item.value }}%</span>
+                                </div>
+                                <div class="regime-meter">
+                                    <div class="regime-meter-fill {{ item.slug }}" style="width: {{ item.value }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Override Control -->
+        <div class="col-md-6">
+            <div class="custom-card shadow-sm p-3">
+                <h6 class="fw-bold mb-3 main-text"><i class="bi bi-sliders me-2 text-warning"></i>Override Control</h6>
+                <p class="small label-text mb-3">Manually force a regime if AI classification requires adjustment based on news events.</p>
+                
+                <div class="d-grid gap-2">
+                    <a href="?override=bullish" class="btn btn-outline-success btn-sm py-2">
+                        <i class="bi bi-arrow-up me-2"></i>SET BULLISH
+                    </a>
+                    <a href="?override=bearish" class="btn btn-outline-danger btn-sm py-2">
+                        <i class="bi bi-arrow-down me-2"></i>SET BEARISH
+                    </a>
+                    <a href="?override=rangebound" class="btn btn-primary btn-sm py-2">
+                        <i class="bi bi-pause me-2"></i>CONFIRM RANGEBOUND
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auto-Sync Settings -->
+        <div class="col-md-6">
+            <div class="custom-card shadow-sm p-3">
+                <h6 class="fw-bold mb-3 main-text"><i class="bi bi-gear me-2 text-secondary"></i>AI Settings</h6>
+                
+                <div class="panel-item border-bottom">
+                    <div>
+                        <span class="main-text">Auto-Sync with LLM</span>
+                        <small class="d-block label-text">Updates AI classification in real-time</small>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="autoSync" checked>
+                    </div>
+                </div>
+                
+                <div class="panel-item border-bottom">
+                    <div>
+                        <span class="main-text">Enable Alerts</span>
+                        <small class="d-block label-text">Notify on regime changes</small>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="enableAlerts" checked>
+                    </div>
+                </div>
+
+                <div class="panel-item">
+                    <div>
+                        <span class="main-text">Show Model Logic</span>
+                        <small class="d-block label-text">Display classification reasoning</small>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="showLogic">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    async function fetchLiveRegime() {
+        try {
+            const resp = await fetch('{% url "market_regime_classifier_live_data" %}');
+            if (!resp.ok) throw new Error('live data request failed');
+
+            const data = await resp.json();
+
+            document.getElementById('currentRegime').textContent = data.regime;
+            document.getElementById('modelConfidence').textContent = data.confidence + '%';
+            document.getElementById('updatedAt').textContent = new Date(data.updated_at).toLocaleTimeString();
+
+            document.getElementById('confidenceHeading').textContent = data.confidence + '%';
+            document.getElementById('confidenceBar').style.width = data.confidence + '%';
+
+            const cards = document.querySelectorAll('.regime-analysis .regime-box');
+            const mapping = { bullish: 0, bearish: 1, rangebound: 2, volatile: 3 };
+            Object.entries(data.scores).forEach(([key, value]) => {
+                const idx = mapping[key];
+                const badge = cards[idx].querySelector('.badge');
+                const fill = cards[idx].querySelector('.regime-meter-fill');
+                badge.textContent = value + '%';
+                fill.style.width = value + '%';
+            });
+
+            const evidenceList = document.querySelector('.evidence-panel');
+            evidenceList.innerHTML = data.evidence_items.map(i => `<div class="panel-item"><span class="main-text">${i}</span><i class="bi bi-check-circle-fill text-success"></i></div>`).join('');
+
+            const manualNote = document.querySelector('.manual-override-alert');
+            if (data.override) manualNote.textContent = 'Manual override in effect: ' + data.override;
+            else manualNote.textContent = '';
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        let autoSyncEnabled = true;
+        let autoSyncTimer = null;
+
+        function startAutoSync() {
+            if (autoSyncTimer) return;
+            autoSyncTimer = setInterval(fetchLiveRegime, 5000);
+        }
+
+        function stopAutoSync() {
+            if (!autoSyncTimer) return;
+            clearInterval(autoSyncTimer);
+            autoSyncTimer = null;
+        }
+
+        const autoSyncSwitch = document.getElementById('autoSync');
+        if (autoSyncSwitch) {
+            autoSyncEnabled = autoSyncSwitch.checked;
+            if (autoSyncEnabled) {
+                startAutoSync();
+            }
+
+            autoSyncSwitch.addEventListener('change', () => {
+                autoSyncEnabled = autoSyncSwitch.checked;
+                if (autoSyncEnabled) {
+                    startAutoSync();
+                    fetchLiveRegime();
+                } else {
+                    stopAutoSync();
+                }
+            });
+        } else {
+            startAutoSync();
+        }
+
+        const refreshBtn = document.getElementById('refreshAnalysisBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                fetchLiveRegime();
+            });
+        }
+
+        fetchLiveRegime();
+    });
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* ========== THEME ENGINE OVERRIDES ========== */
+    :root {
+        --card-bg: #ffffff;
+        --text-main: #1a1d20;
+        --text-muted: #6c757d;
+        --border-theme: #dee2e6;
+        --primary: #0d6efd;
+        --accent: #17a2b8;
+    }
+
+    html[data-theme="dark"] {
+        --card-bg: #1a1d21;
+        --text-main: #f8f9fa;
+        --text-muted: #adb5bd;
+        --border-theme: #2d3238;
+        --primary: #0d6efd;
+        --accent: #17a2b8;
+    }
+
+    /* ========== REGIME CLASSIFIER STYLES ========== */
+    .regime-container {
+        color: var(--text-main);
+    }
+
+    .custom-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-theme);
+        border-radius: 16px;
+        transition: background-color 0.3s ease;
+    }
+
+    .main-text { color: var(--text-main) !important; }
+    .label-text { color: var(--text-muted) !important; }
+
+    .stat-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .vr-line {
+        width: 1px;
+        height: 40px;
+        background-color: var(--border-theme);
+    }
+
+    .regime-status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        background-color: rgba(25, 135, 84, 0.1);
+        border-radius: 8px;
+        font-weight: 600;
+        color: #198754;
+    }
+
+    .panel-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+    }
+
+    .border-bottom-theme {
+        border-bottom: 1px solid var(--border-theme);
+    }
+
+    /* Regime Meters */
+    .regime-box {
+        padding: 15px;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-theme);
+        border-radius: 10px;
+    }
+
+    .regime-meter {
+        height: 8px;
+        background-color: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .regime-meter-fill {
+        height: 100%;
+        transition: width 1.5s ease-in-out;
+    }
+
+    .regime-meter-fill.bullish {
+        background: linear-gradient(90deg, #28a745, #20c997);
+    }
+
+    .regime-meter-fill.bearish {
+        background: linear-gradient(90deg, #dc3545, #fd7e14);
+    }
+
+    .regime-meter-fill.rangebound {
+        background: linear-gradient(90deg, #0d6efd, #0dcaf0);
+    }
+
+    .regime-meter-fill.volatile {
+        background: linear-gradient(90deg, #ffc107, #fd7e14);
+    }
+
+    .progress-container {
+        height: 10px;
+        background-color: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        transition: width 1.5s ease-in-out;
+    }
+
+    /* Form Switches */
+    .form-check-input {
+        width: 2.5em;
+        height: 1.5em;
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+</style>
+{% endblock %}
